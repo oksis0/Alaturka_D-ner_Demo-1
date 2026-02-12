@@ -254,7 +254,15 @@
         import { getFirestore, collection, doc, setDoc, onSnapshot, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // CONFIG
-        const manualFirebaseConfig = null; 
+        const manualFirebaseConfig = {  
+  apiKey: "AIzaSyAW2AOrkNufhOz4jfoStXRLqONSpVIBhSI",
+  authDomain: "alaturka-doner.firebaseapp.com",
+  projectId: "alaturka-doner",
+  storageBucket: "alaturka-doner.firebasestorage.app",
+  messagingSenderId: "505768016647",
+  appId: "1:505768016647:web:b0078148adaf4c21bae3a2",
+  measurementId: "G-W5RE5765MF"
+ };
         const firebaseConfig = manualFirebaseConfig || (typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-offline-menu';
 
