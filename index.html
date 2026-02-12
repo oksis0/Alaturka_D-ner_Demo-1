@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alaturka Döner</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        
+        :root {
+            --gold: #D4AF37;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .gold-text { color: var(--gold); }
+        .gold-bg { background-color: var(--gold); }
+        .gold-border { border-color: var(--gold); }
+        
+        .menu-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0));
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+            height: auto;
+            min-height: fit-content;
+        }
+        
+        .menu-card:hover {
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        .admin-sidebar-item.active {
+            background-color: var(--gold);
+            color: #000;
+        }
+
+        #modal-overlay {
+            backdrop-filter: blur(8px);
+            transition: opacity 0.3s ease;
+        }
+
+        .product-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .mode-indicator {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 10px;
+            opacity: 0.5;
+            z-index: 200;
+        }
+    </style>
+</head>
+<body class="selection:bg-[#D4AF37] selection:text-black">
+
+    <!-- MOD GÖSTERGESİ -->
+    <div id="app-mode" class="mode-indicator gold-text uppercase font-bold"></div>
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center gap-6">
+        <i data-lucide="utensils" class="w-16 h-16 text-[#D4AF37] animate-bounce"></i>
+        <p class="text-[#D4AF37] font-black text-2xl tracking-[0.3em] animate-pulse uppercase text-center px-6">Afiyet Olsun...</p>
+    </div>
+
+    <!-- MAIN MENU VIEW -->
+    <div id="menu-view" class="hidden min-h-screen pb-20">
+        <header class="bg-black/90 backdrop-blur-xl border-b border-[#D4AF37]/20 sticky top-0 z-50">
+            <div class="max-w-4xl mx-auto px-6 py-10 relative text-center">
+                <div class="flex flex-col items-center gap-6">
+                    <img id="shop-logo" src="" alt="Logo" class="w-auto h-20 md:h-28 max-w-[320px] md:max-w-[600px] rounded-2xl object-contain border-2 border-[#D4AF37] shadow-[0_0_30px_rgba(212,175,55,0.2)] px-10 py-4 bg-black/60">
+                    <h1 id="shop-name" class="text-3xl font-black tracking-tighter text-[#D4AF37]">Yükleniyor...</h1>
+                </div>
+                <button onclick="switchView('login-view')" class="absolute right-6 top-8 p-2 text-gray-500 hover:text-white transition-all">
+                    <i data-lucide="settings" class="w-7 h-7"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto px-6 pt-10">
+            <div class="relative mb-12">
+                <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 w-6 h-6"></i>
+                <input type="text" id="menu-search" placeholder="Menüde arayın..." 
+                       class="w-full pl-16 pr-6 py-6 rounded-3xl bg-white/5 border border-white/10 text-white text-xl focus:ring-2 focus:ring-[#D4AF37]/50 outline-none transition-all">
+            </div>
+            <div id="category-list" class="flex gap-4 overflow-x-auto pb-8 no-scrollbar scroll-smooth"></div>
+            <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 text-left"></div>
+        </main>
+    </div>
+
+    <!-- ADMIN LOGIN VIEW -->
+    <div id="login-view" class="hidden min-h-screen bg-black flex items-center justify-center p-6 text-center">
+        <div class="bg-neutral-900 p-12 rounded-[3.5rem] shadow-2xl w-full max-w-lg border border-white/5">
+            <div class="w-24 h-24 bg-neutral-800 text-[#D4AF37] rounded-full flex items-center justify-center mx-auto mb-8 border border-[#D4AF37]/20">
+                <i data-lucide="log-in" class="w-12 h-12"></i>
+            </div>
+            <h2 class="text-4xl font-black text-white mb-4 uppercase">Yönetim</h2>
+            <p class="text-neutral-500 text-xl mb-10">Şifrenizi Girin</p>
+            <input type="password" id="admin-pass-input" placeholder="••••••••" 
+                   class="w-full px-8 py-5 bg-neutral-800 border border-neutral-700 text-white text-center text-2xl rounded-3xl mb-6 outline-none focus:ring-4 focus:ring-[#D4AF37]/30 tracking-widest">
+            <div id="login-error" class="text-red-500 text-lg mb-6 font-bold hidden">Şifre hatalı!</div>
+            <button onclick="handleAdminLogin()" class="w-full gold-bg text-black py-5 rounded-3xl font-black text-2xl hover:brightness-110 transition-all mb-6">GİRİŞ YAP</button>
+            <button onclick="switchView('menu-view')" class="text-neutral-500 text-lg hover:text-white flex items-center justify-center gap-2 mx-auto">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i> Geri Dön
+            </button>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL VIEW -->
+    <div id="admin-view" class="hidden min-h-screen bg-slate-50 flex flex-col md:flex-row text-slate-900">
+        <aside class="w-full md:w-80 bg-black text-white p-8 flex flex-col gap-10">
+            <div class="flex items-center gap-4">
+                <div class="gold-bg p-3 rounded-2xl text-black"><i data-lucide="layout-dashboard"></i></div>
+                <h1 class="font-black text-2xl leading-none uppercase">Panel</h1>
+            </div>
+            <nav class="flex flex-col gap-4">
+                <button onclick="showAdminTab('settings')" id="tab-btn-settings" class="admin-sidebar-item flex items-center gap-4 px-6 py-5 rounded-[1.5rem] text-xl font-black text-slate-500 hover:text-white transition-all">
+                    <i data-lucide="settings"></i> AYARLAR
+                </button>
+                <button onclick="showAdminTab('categories')" id="tab-btn-categories" class="admin-sidebar-item flex items-center gap-4 px-6 py-5 rounded-[1.5rem] text-xl font-black text-slate-500 hover:text-white transition-all">
+                    <i data-lucide="palette"></i> KATEGORİLER
+                </button>
+                <button onclick="showAdminTab('items')" id="tab-btn-items" class="admin-sidebar-item flex items-center gap-4 px-6 py-5 rounded-[1.5rem] text-xl font-black text-slate-500 hover:text-white transition-all">
+                    <i data-lucide="utensils"></i> ÜRÜNLER
+                </button>
+            </nav>
+            <button onclick="switchView('menu-view')" class="mt-auto flex items-center justify-center gap-3 px-6 py-5 rounded-[1.5rem] text-slate-400 border-2 border-slate-800 hover:border-[#D4AF37] transition-all font-black text-xl">
+                <i data-lucide="arrow-left"></i> MENÜYE GİT
+            </button>
+        </aside>
+
+        <main class="flex-grow p-8 md:p-12 overflow-y-auto max-h-screen">
+            <!-- Settings Content -->
+            <div id="admin-tab-settings" class="admin-tab hidden">
+                <div class="max-w-3xl bg-white rounded-[3rem] p-10 shadow-xl border border-slate-100">
+                    <h2 class="text-3xl font-black mb-10 gold-text uppercase text-center">Genel Ayarlar</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 text-slate-600">
+                        <div>
+                            <label class="block text-sm font-black mb-2 uppercase tracking-widest">Dükkan Adı</label>
+                            <input type="text" id="set-shop-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#D4AF37] text-xl font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-black mb-2 uppercase tracking-widest">Para Birimi</label>
+                            <input type="text" id="set-currency" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#D4AF37] text-xl font-bold">
+                        </div>
+                    </div>
+                    <div class="mb-8">
+                        <label class="block text-sm font-black text-slate-500 mb-2 uppercase tracking-widest">Logo</label>
+                        <div class="flex items-center gap-6 p-4 bg-slate-50 border rounded-2xl">
+                            <img id="set-logo-preview" src="" class="w-32 h-auto max-h-16 rounded-lg object-contain border bg-black/10">
+                            <div class="flex-grow">
+                                <input type="file" id="logo-upload" accept="image/*" class="hidden" onchange="handleImageUpload(event, 'logo')">
+                                <button onclick="document.getElementById('logo-upload').click()" class="bg-black text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition-all w-full uppercase">Logoyu Değiştir</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 text-slate-600">
+                        <div>
+                            <label class="block text-sm font-black mb-2 uppercase tracking-widest">Admin Şifresi</label>
+                            <input type="text" id="set-password" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#D4AF37] text-xl font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-black mb-2 uppercase tracking-widest">Tema Rengi</label>
+                            <input type="color" id="set-color" class="w-full h-14 rounded-2xl cursor-pointer border-none bg-transparent p-0">
+                        </div>
+                    </div>
+                    <button onclick="saveGeneralSettings()" class="w-full bg-black text-[#D4AF37] py-6 rounded-3xl font-black text-2xl uppercase shadow-xl hover:scale-[1.02] transition-transform">Ayarları Kaydet</button>
+                </div>
+            </div>
+
+            <!-- Categories Content -->
+            <div id="admin-tab-categories" class="admin-tab hidden">
+                <div class="max-w-3xl bg-white rounded-[3rem] p-10 shadow-xl border border-slate-100">
+                    <h2 class="text-3xl font-black mb-10 gold-text uppercase">Kategoriler</h2>
+                    <div class="flex gap-4 mb-10">
+                        <input type="text" id="new-cat-input" placeholder="Yeni kategori adı..." class="flex-grow p-5 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-xl font-bold">
+                        <button onclick="addCategory()" class="bg-black text-[#D4AF37] px-8 rounded-2xl hover:brightness-110"><i data-lucide="plus"></i></button>
+                    </div>
+                    <div id="admin-category-list" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- Items Content -->
+            <div id="admin-tab-items" class="admin-tab hidden">
+                <div class="max-w-5xl bg-white rounded-[3rem] p-10 shadow-xl border border-slate-100">
+                    <div class="flex justify-between items-center mb-10">
+                        <h2 class="text-3xl font-black gold-text uppercase">Ürün Yönetimi</h2>
+                        <button onclick="openItemModal()" class="bg-black text-[#D4AF37] px-8 py-4 rounded-2xl font-black text-xl flex items-center gap-2 hover:scale-105 transition-transform">
+                            <i data-lucide="plus"></i> ÜRÜN EKLE
+                        </button>
+                    </div>
+                    <div id="admin-item-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ITEM MODAL -->
+    <div id="item-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-6">
+        <div id="modal-overlay" class="absolute inset-0 bg-black/80" onclick="closeItemModal()"></div>
+        <div class="relative bg-white rounded-[4rem] p-10 w-full max-w-2xl shadow-2xl text-slate-800">
+            <div class="flex justify-between items-center mb-8">
+                <h3 id="modal-title" class="text-3xl font-black uppercase">Ürün Bilgileri</h3>
+                <button onclick="closeItemModal()"><i data-lucide="x" class="w-10 h-10"></i></button>
+            </div>
+            <div class="space-y-6 text-left">
+                <div class="flex items-center gap-6 p-4 bg-slate-50 rounded-3xl border border-dashed">
+                    <div class="w-32 h-32 rounded-3xl bg-white border flex items-center justify-center overflow-hidden">
+                        <img id="item-img-preview" src="" class="hidden w-full h-full object-cover">
+                        <i id="item-img-placeholder" data-lucide="image" class="text-slate-300 w-12 h-12"></i>
+                    </div>
+                    <div class="flex-grow">
+                        <label class="block text-sm font-black text-slate-500 mb-2 uppercase">Görsel Seç</label>
+                        <input type="file" id="item-img-upload" accept="image/*" class="hidden" onchange="handleImageUpload(event, 'item')">
+                        <button onclick="document.getElementById('item-img-upload').click()" class="bg-black text-white px-6 py-3 rounded-xl font-bold w-full uppercase">Fotoğraf Yükle</button>
+                    </div>
+                </div>
+                <input type="text" id="item-name-input" placeholder="Ürün Adı" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-xl font-bold">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="number" id="item-price-input" placeholder="Fiyat" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-xl font-bold">
+                    <select id="item-cat-select" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-xl font-bold uppercase"></select>
+                </div>
+                <textarea id="item-desc-input" placeholder="Açıklama..." class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none h-24 text-lg"></textarea>
+                <button id="save-item-btn" onclick="saveItem()" class="w-full bg-black text-[#D4AF37] py-6 rounded-[2rem] font-black text-2xl uppercase">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (İsteğe Bağlı) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // CONFIG
+        const manualFirebaseConfig = null; 
+        const firebaseConfig = manualFirebaseConfig || (typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-offline-menu';
+
+        // STATE
+        let settings = { shopName: "Premium Menü", logoUrl: "", primaryColor: "#D4AF37", currency: "₺", adminPassword: "admin" };
+        let categories = [];
+        let items = [];
+        let editingItemId = null;
+        let selectedCategory = 'All';
+        let currentLogoBase64 = null;
+        let currentItemImageBase64 = null;
+        let isFirstLoad = true;
+        let useFirebase = !!firebaseConfig;
+
+        // MOD GÖSTERGESİ
+        document.getElementById('app-mode').innerText = useFirebase ? "Canlı Mod (Firebase)" : "Çevrimdışı Mod (LocalStorage)";
+
+        // HELPERS
+        window.switchView = (viewId) => {
+            document.getElementById('menu-view').classList.add('hidden');
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('admin-view').classList.add('hidden');
+            document.getElementById(viewId).classList.remove('hidden');
+            window.scrollTo(0,0);
+            lucide.createIcons();
+        };
+
+        window.showAdminTab = (tabId) => {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.add('hidden'));
+            document.querySelectorAll('.admin-sidebar-item').forEach(b => b.classList.remove('active'));
+            document.getElementById(`admin-tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-btn-${tabId}`).classList.add('active');
+            lucide.createIcons();
+        };
+
+        window.handleImageUpload = async (e, mode) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX = 1000;
+                    let w = img.width, h = img.height;
+                    if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
+                    else { if (h > MAX) { w *= MAX / h; h = MAX; } }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    const base64 = canvas.toDataURL('image/jpeg', 0.7);
+                    if (mode === 'logo') {
+                        currentLogoBase64 = base64;
+                        document.getElementById('set-logo-preview').src = base64;
+                    } else {
+                        currentItemImageBase64 = base64;
+                        document.getElementById('item-img-preview').src = base64;
+                        document.getElementById('item-img-preview').classList.remove('hidden');
+                        document.getElementById('item-img-placeholder').classList.add('hidden');
+                    }
+                };
+            };
+        };
+
+        // --- VERİ YÖNETİMİ (HYBRID: FIREBASE VEYA LOCALSTORAGE) ---
+
+        const notifyUI = () => {
+            renderSettings();
+            renderCategories();
+            renderCategoryScroller();
+            renderMenuItems();
+            renderAdminItems();
+            if (isFirstLoad) {
+                document.getElementById('loading-screen').classList.add('hidden');
+                switchView('menu-view');
+                isFirstLoad = false;
+            }
+        };
+
+        if (!useFirebase) {
+            // LOCAL STORAGE MODE (HİÇBİR AYAR GEREKTİRMEZ)
+            const loadLocal = () => {
+                const s = localStorage.getItem(`${appId}_settings`);
+                if (s) settings = JSON.parse(s);
+                const c = localStorage.getItem(`${appId}_categories`);
+                if (c) categories = JSON.parse(c);
+                const i = localStorage.getItem(`${appId}_items`);
+                if (i) items = JSON.parse(i);
+                notifyUI();
+            };
+
+            window.saveGeneralSettings = () => {
+                settings = {
+                    shopName: document.getElementById('set-shop-name').value,
+                    currency: document.getElementById('set-currency').value,
+                    adminPassword: document.getElementById('set-password').value,
+                    primaryColor: document.getElementById('set-color').value,
+                    logoUrl: currentLogoBase64
+                };
+                localStorage.setItem(`${appId}_settings`, JSON.stringify(settings));
+                notifyUI();
+                alert("Kaydedildi!");
+            };
+
+            window.addCategory = () => {
+                const name = document.getElementById('new-cat-input').value;
+                if (!name) return;
+                categories.push({ id: Date.now().toString(), name });
+                localStorage.setItem(`${appId}_categories`, JSON.stringify(categories));
+                document.getElementById('new-cat-input').value = '';
+                notifyUI();
+            };
+
+            window.deleteCategory = (id) => {
+                categories = categories.filter(c => c.id !== id);
+                localStorage.setItem(`${appId}_categories`, JSON.stringify(categories));
+                notifyUI();
+            };
+
+            window.saveItem = () => {
+                const data = {
+                    id: editingItemId || Date.now().toString(),
+                    name: document.getElementById('item-name-input').value,
+                    price: document.getElementById('item-price-input').value,
+                    description: document.getElementById('item-desc-input').value,
+                    categoryId: document.getElementById('item-cat-select').value,
+                    imageUrl: currentItemImageBase64
+                };
+                if (editingItemId) items = items.map(i => i.id === editingItemId ? data : i);
+                else items.push(data);
+                localStorage.setItem(`${appId}_items`, JSON.stringify(items));
+                closeItemModal();
+                notifyUI();
+            };
+
+            window.deleteItem = (id) => {
+                items = items.filter(i => i.id !== id);
+                localStorage.setItem(`${appId}_items`, JSON.stringify(items));
+                notifyUI();
+            };
+
+            setTimeout(loadLocal, 1000);
+
+        } else {
+            // FIREBASE MODE
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config'), (snap) => {
+                        if (snap.exists()) settings = snap.data();
+                        else setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config'), settings);
+                        renderSettings();
+                    });
+                    onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'categories'), (snap) => {
+                        categories = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                        renderCategories();
+                        renderCategoryScroller();
+                    });
+                    onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'items'), (snap) => {
+                        items = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                        notifyUI();
+                    });
+                } else {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) signInWithCustomToken(auth, __initial_auth_token);
+                    else signInAnonymously(auth);
+                }
+            });
+
+            window.saveGeneralSettings = async () => {
+                const data = {
+                    shopName: document.getElementById('set-shop-name').value,
+                    currency: document.getElementById('set-currency').value,
+                    adminPassword: document.getElementById('set-password').value,
+                    primaryColor: document.getElementById('set-color').value,
+                    logoUrl: currentLogoBase64
+                };
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config'), data);
+                alert("Kaydedildi!");
+            };
+
+            window.addCategory = async () => {
+                const name = document.getElementById('new-cat-input').value;
+                if (!name) return;
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'categories'), { name });
+                document.getElementById('new-cat-input').value = '';
+            };
+
+            window.deleteCategory = async (id) => {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', id));
+            };
+
+            window.saveItem = async () => {
+                const data = {
+                    name: document.getElementById('item-name-input').value,
+                    price: document.getElementById('item-price-input').value,
+                    description: document.getElementById('item-desc-input').value,
+                    categoryId: document.getElementById('item-cat-select').value,
+                    imageUrl: currentItemImageBase64
+                };
+                if (editingItemId) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'items', editingItemId), data);
+                else await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'items'), data);
+                closeItemModal();
+            };
+
+            window.deleteItem = async (id) => {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'items', id));
+            };
+        }
+
+        // RENDER FUNCTIONS (SHARED)
+        function renderSettings() {
+            document.getElementById('shop-name').innerText = settings.shopName;
+            document.getElementById('shop-logo').src = settings.logoUrl || 'https://via.placeholder.com/600x200?text=LOGO';
+            document.documentElement.style.setProperty('--gold', settings.primaryColor);
+            document.getElementById('set-shop-name').value = settings.shopName;
+            document.getElementById('set-currency').value = settings.currency;
+            document.getElementById('set-password').value = settings.adminPassword;
+            document.getElementById('set-color').value = settings.primaryColor;
+            document.getElementById('set-logo-preview').src = settings.logoUrl;
+            currentLogoBase64 = settings.logoUrl;
+        }
+
+        function renderCategoryScroller() {
+            const container = document.getElementById('category-list');
+            let html = `<button onclick="setFilter('All')" class="px-8 py-3 rounded-full whitespace-nowrap text-lg font-bold border ${selectedCategory === 'All' ? 'gold-bg text-black' : 'text-gray-400 border-white/10'}">TÜMÜ</button>`;
+            categories.forEach(c => {
+                html += `<button onclick="setFilter('${c.id}')" class="px-8 py-3 rounded-full whitespace-nowrap text-lg font-bold border ${selectedCategory === c.id ? 'gold-bg text-black' : 'text-gray-400 border-white/10'}">${c.name.toUpperCase()}</button>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderMenuItems() {
+            const container = document.getElementById('product-grid');
+            const search = document.getElementById('menu-search').value.toLowerCase();
+            const filtered = items.filter(i => {
+                const matchSearch = (i.name || "").toLowerCase().includes(search);
+                const matchCat = selectedCategory === 'All' || i.categoryId === selectedCategory;
+                return matchSearch && matchCat;
+            });
+            container.innerHTML = filtered.map(i => `
+                <div class="menu-card rounded-[2.5rem] p-5 flex flex-col sm:flex-row gap-6">
+                    <img src="${i.imageUrl || 'https://via.placeholder.com/400'}" class="w-full sm:w-48 h-48 md:h-auto object-cover rounded-[2rem] flex-shrink-0">
+                    <div class="product-content flex-grow py-2">
+                        <div>
+                            <h3 class="font-black text-2xl gold-text break-words mb-2">${i.name}</h3>
+                            <p class="text-gray-400 text-lg leading-relaxed mb-4">${i.description || ""}</p>
+                        </div>
+                        <div class="text-3xl font-black gold-text">${i.price} ${settings.currency}</div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('admin-category-list');
+            container.innerHTML = categories.map(c => `
+                <div class="flex items-center justify-between p-6 bg-slate-50 rounded-[2rem] border">
+                    <span class="text-xl font-bold uppercase">${c.name}</span>
+                    <button onclick="deleteCategory('${c.id}')" class="text-red-500"><i data-lucide="trash-2"></i></button>
+                </div>
+            `).join('');
+            document.getElementById('item-cat-select').innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            lucide.createIcons();
+        }
+
+        function renderAdminItems() {
+            const container = document.getElementById('admin-item-grid');
+            container.innerHTML = items.map(i => `
+                <div class="p-4 bg-slate-50 rounded-[2.5rem] border flex flex-col h-full">
+                    <img src="${i.imageUrl || 'https://via.placeholder.com/400'}" class="w-full h-40 object-cover rounded-3xl mb-4 flex-shrink-0">
+                    <div class="flex-grow">
+                        <h4 class="font-black text-xl mb-1">${i.name}</h4>
+                        <p class="font-black gold-text mb-4">${i.price} TL</p>
+                    </div>
+                    <div class="flex gap-2 mt-auto">
+                        <button onclick="openItemModal('${i.id}')" class="flex-grow py-3 bg-white rounded-xl border font-bold">DÜZENLE</button>
+                        <button onclick="deleteItem('${i.id}')" class="p-3 text-red-500 bg-red-50 rounded-xl"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        window.setFilter = (id) => { selectedCategory = id; renderCategoryScroller(); renderMenuItems(); };
+        window.handleAdminLogin = () => {
+            if (document.getElementById('admin-pass-input').value === settings.adminPassword) {
+                switchView('admin-view');
+                showAdminTab('settings');
+                document.getElementById('login-error').classList.add('hidden');
+            } else document.getElementById('login-error').classList.remove('hidden');
+        };
+        window.openItemModal = (id = null) => {
+            editingItemId = id;
+            if (id) {
+                const i = items.find(x => x.id === id);
+                document.getElementById('item-name-input').value = i.name;
+                document.getElementById('item-price-input').value = i.price;
+                document.getElementById('item-desc-input').value = i.description || "";
+                document.getElementById('item-cat-select').value = i.categoryId;
+                document.getElementById('item-img-preview').src = i.imageUrl || "";
+                document.getElementById('item-img-preview').classList.toggle('hidden', !i.imageUrl);
+                document.getElementById('item-img-placeholder').classList.toggle('hidden', !!i.imageUrl);
+                currentItemImageBase64 = i.imageUrl;
+            } else {
+                document.getElementById('item-name-input').value = '';
+                document.getElementById('item-price-input').value = '';
+                document.getElementById('item-desc-input').value = '';
+                document.getElementById('item-img-preview').classList.add('hidden');
+                document.getElementById('item-img-placeholder').classList.remove('hidden');
+                currentItemImageBase64 = null;
+            }
+            document.getElementById('item-modal').classList.remove('hidden');
+            lucide.createIcons();
+        };
+        window.closeItemModal = () => document.getElementById('item-modal').classList.add('hidden');
+        document.getElementById('menu-search').addEventListener('input', renderMenuItems);
+        lucide.createIcons();
+    </script>
+</body>
+</html>
