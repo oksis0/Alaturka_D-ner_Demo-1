@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alaturka Döner</title>
+    <title>Premium QR Menü</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -34,6 +34,7 @@
             transition: all 0.3s ease;
             height: auto;
             min-height: fit-content;
+            width: 100%; /* Her zaman tam genişlik */
         }
         
         .menu-card:hover {
@@ -75,7 +76,7 @@
     <!-- LOADING SCREEN -->
     <div id="loading-screen" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center gap-6">
         <i data-lucide="utensils" class="w-16 h-16 text-[#D4AF37] animate-bounce"></i>
-        <p class="text-[#D4AF37] font-black text-2xl tracking-[0.3em] animate-pulse uppercase text-center px-6">Afiyet Olsun...</p>
+        <p class="text-[#D4AF37] font-black text-2xl tracking-[0.3em] animate-pulse uppercase text-center px-6">Sistem Hazırlanıyor...</p>
     </div>
 
     <!-- MAIN MENU VIEW -->
@@ -92,14 +93,19 @@
             </div>
         </header>
 
-        <main class="max-w-4xl mx-auto px-6 pt-10">
-            <div class="relative mb-12">
+        <main class="max-w-4xl mx-auto px-6 pt-10 text-center">
+            <!-- Search -->
+            <div class="relative mb-12 max-w-2xl mx-auto text-left">
                 <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 w-6 h-6"></i>
                 <input type="text" id="menu-search" placeholder="Menüde arayın..." 
                        class="w-full pl-16 pr-6 py-6 rounded-3xl bg-white/5 border border-white/10 text-white text-xl focus:ring-2 focus:ring-[#D4AF37]/50 outline-none transition-all">
             </div>
+
+            <!-- Categories -->
             <div id="category-list" class="flex gap-4 overflow-x-auto pb-8 no-scrollbar scroll-smooth"></div>
-            <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 text-left"></div>
+
+            <!-- Products (Her zaman alt alta - Grid sistemi md ekranlarda 1 sütuna çekildi) -->
+            <div id="product-grid" class="grid grid-cols-1 gap-8 mt-4 text-left max-w-3xl mx-auto"></div>
         </main>
     </div>
 
@@ -492,6 +498,8 @@
                 const matchCat = selectedCategory === 'All' || i.categoryId === selectedCategory;
                 return matchSearch && matchCat;
             });
+            
+            // Grid sistemi md ekranlarda md:grid-cols-2'den grid-cols-1'e çekildi (Asla yan yana gelmesin)
             container.innerHTML = filtered.map(i => `
                 <div class="menu-card rounded-[2.5rem] p-5 flex flex-col sm:flex-row gap-6">
                     <img src="${i.imageUrl || 'https://via.placeholder.com/400'}" class="w-full sm:w-48 h-48 md:h-auto object-cover rounded-[2rem] flex-shrink-0">
