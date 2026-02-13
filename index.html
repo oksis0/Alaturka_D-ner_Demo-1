@@ -4,10 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alaturka Döener</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Alaturka Döner - Dijital Menü</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -20,41 +18,38 @@
             font-family: 'Inter', sans-serif;
             background-color: #000;
             color: #fff;
+            overflow-x: hidden;
         }
 
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        .gold-text {
-            color: var(--gold);
-        }
-
-        .gold-bg {
-            background-color: var(--gold);
-        }
-
-        .gold-border {
-            border-color: var(--gold);
-        }
-
+        .gold-text { color: var(--gold); }
+        .gold-bg { background-color: var(--gold); }
+        
+        /* Dinamik Genişleyen Kart Yapısı */
         .menu-card {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s ease;
-            height: auto;
-            min-height: fit-content;
-            width: 100%;
-            /* Her zaman tam genişlik */
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%; /* Mobil cihazlarda tam genişlik */
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 768px) {
+            .menu-card {
+                flex-direction: row;
+                width: fit-content; /* İçeriğe göre yana uzasın */
+                min-width: 400px;
+                max-width: 800px;
+            }
         }
 
         .menu-card:hover {
-            border-color: rgba(212, 175, 55, 0.3);
+            border-color: var(--gold);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px -10px rgba(212, 175, 55, 0.3);
         }
 
         .admin-sidebar-item.active {
@@ -62,692 +57,526 @@
             color: #000;
         }
 
-        #modal-overlay {
-            backdrop-filter: blur(8px);
+        #loading-screen {
+            backdrop-filter: blur(20px);
+        }
+
+        .product-img {
             transition: opacity 0.3s ease;
+            object-fit: cover;
         }
 
-        .product-content {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
-        }
-
-        .mode-indicator {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            font-size: 10px;
-            opacity: 0.5;
-            z-index: 200;
+        /* Metinlerin taşmaması için ayar */
+        .product-info {
+            flex: 1;
+            min-width: 200px;
         }
     </style>
 </head>
 
 <body class="selection:bg-[#D4AF37] selection:text-black">
 
-    <!-- MOD GÖSTERGESİ -->
-    <div id="app-mode" class="mode-indicator gold-text uppercase font-bold"></div>
+    <div id="app-mode" class="fixed bottom-2 right-2 text-[10px] opacity-30 gold-text z-[200]"></div>
 
     <!-- LOADING SCREEN -->
     <div id="loading-screen" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center gap-6">
-        <i data-lucide="utensils" class="w-16 h-16 text-[#D4AF37] animate-bounce"></i>
-        <p class="text-[#D4AF37] font-black text-2xl tracking-[0.3em] animate-pulse uppercase text-center px-6">Afiyet
-            Olsun...</p>
+        <div class="relative">
+            <i data-lucide="utensils" class="w-16 h-16 text-[#D4AF37] animate-bounce"></i>
+            <div class="absolute inset-0 bg-[#D4AF37] blur-3xl opacity-20 animate-pulse"></div>
+        </div>
+        <p class="text-[#D4AF37] font-black text-2xl tracking-[0.3em] uppercase animate-pulse">Yükleniyor...</p>
     </div>
 
     <!-- MAIN MENU VIEW -->
     <div id="menu-view" class="hidden min-h-screen pb-20">
-        <header class="bg-black/90 backdrop-blur-xl border-b border-[#D4AF37]/20 sticky top-0 z-50">
-            <div class="max-w-4xl mx-auto px-6 py-10 relative text-center">
-                <div class="flex flex-col items-center gap-6">
-                    <img id="shop-logo" src="" alt="Logo"
-                        class="w-auto h-20 md:h-28 max-w-[320px] md:max-w-[600px] rounded-2xl object-contain border-2 border-[#D4AF37] shadow-[0_0_30px_rgba(212,175,55,0.2)] px-10 py-4 bg-black/60">
-                    <h1 id="shop-name" class="text-3xl font-black tracking-tighter text-[#D4AF37]">Yükleniyor...</h1>
-                </div>
-                <button onclick="switchView('login-view')"
-                    class="absolute right-6 top-8 p-2 text-gray-500 hover:text-white transition-all">
-                    <i data-lucide="settings" class="w-7 h-7"></i>
+        <header class="bg-black/80 backdrop-blur-xl border-b border-[#D4AF37]/20 sticky top-0 z-50">
+            <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col items-center gap-4 relative">
+                <img id="shop-logo" src="" alt="Logo" class="h-20 md:h-28 w-auto object-contain rounded-xl">
+                <h1 id="shop-name" class="text-2xl font-black tracking-widest text-[#D4AF37] uppercase"></h1>
+                
+                <button onclick="switchView('login-view')" class="absolute right-6 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-gold transition-colors">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
                 </button>
             </div>
         </header>
 
-        <main class="max-w-4xl mx-auto px-6 pt-10 text-center">
-            <!-- Search -->
-            <div class="relative mb-12 max-w-2xl mx-auto text-left">
-                <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 w-6 h-6"></i>
-                <input type="text" id="menu-search" placeholder="Menüde arayın..."
-                    class="w-full pl-16 pr-6 py-6 rounded-3xl bg-white/5 border border-white/10 text-white text-xl focus:ring-2 focus:ring-[#D4AF37]/50 outline-none transition-all">
+        <main class="max-w-6xl mx-auto px-6 pt-10">
+            <!-- Arama -->
+            <div class="relative mb-10 max-w-xl mx-auto">
+                <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5"></i>
+                <input type="text" id="menu-search" placeholder="Lezzet keşfine çık..."
+                    class="w-full pl-14 pr-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-white focus:ring-2 focus:ring-[#D4AF37]/50 outline-none transition-all">
             </div>
 
-            <!-- Categories -->
-            <div id="category-list" class="flex gap-4 overflow-x-auto pb-8 no-scrollbar scroll-smooth"></div>
+            <!-- Kategoriler -->
+            <div id="category-list" class="flex gap-3 overflow-x-auto pb-8 no-scrollbar scroll-smooth mb-6 justify-start md:justify-center"></div>
 
-            <!-- Products (Her zaman alt alta - Grid sistemi md ekranlarda 1 sütuna çekildi) -->
-            <div id="product-grid" class="grid grid-cols-1 gap-8 mt-4 text-left max-w-3xl mx-auto"></div>
+            <!-- Ürünler -->
+            <div id="product-grid" class="flex flex-wrap gap-6 justify-center"></div>
         </main>
     </div>
 
-    <!-- ADMIN LOGIN VIEW -->
-    <div id="login-view" class="hidden min-h-screen bg-black flex items-center justify-center p-6 text-center">
-        <div class="bg-neutral-900 p-12 rounded-[3.5rem] shadow-2xl w-full max-w-lg border border-white/5">
-            <div
-                class="w-24 h-24 bg-neutral-800 text-[#D4AF37] rounded-full flex items-center justify-center mx-auto mb-8 border border-[#D4AF37]/20">
-                <i data-lucide="log-in" class="w-12 h-12"></i>
-            </div>
-            <h2 class="text-4xl font-black text-white mb-4 uppercase">Yönetim</h2>
-            <p class="text-neutral-500 text-xl mb-10">Şifrenizi Girin</p>
-            <input type="password" id="admin-pass-input" placeholder="••••••••"
-                class="w-full px-8 py-5 bg-neutral-800 border border-neutral-700 text-white text-center text-2xl rounded-3xl mb-6 outline-none focus:ring-4 focus:ring-[#D4AF37]/30 tracking-widest">
-            <div id="login-error" class="text-red-500 text-lg mb-6 font-bold hidden">Şifre hatalı!</div>
-            <button onclick="handleAdminLogin()"
-                class="w-full gold-bg text-black py-5 rounded-3xl font-black text-2xl hover:brightness-110 transition-all mb-6">GİRİŞ
-                YAP</button>
-            <button onclick="switchView('menu-view')"
-                class="text-neutral-500 text-lg hover:text-white flex items-center justify-center gap-2 mx-auto">
-                <i data-lucide="arrow-left" class="w-5 h-5"></i> Geri Dön
+    <!-- LOGIN VIEW -->
+    <div id="login-view" class="hidden min-h-screen flex items-center justify-center p-6">
+        <div class="bg-neutral-900 p-10 rounded-[2.5rem] w-full max-w-md border border-white/5 text-center">
+            <i data-lucide="lock" class="w-12 h-12 text-[#D4AF37] mx-auto mb-6"></i>
+            <h2 class="text-2xl font-black mb-8">YÖNETİCİ GİRİŞİ</h2>
+            <input type="password" id="admin-pass-input" placeholder="Şifre"
+                class="w-full px-6 py-4 bg-black border border-neutral-800 rounded-2xl mb-4 text-center text-xl focus:ring-2 focus:ring-gold outline-none">
+            <div id="login-error" class="text-red-500 text-sm mb-4 hidden">Hatalı şifre!</div>
+            <button onclick="handleAdminLogin()" class="w-full gold-bg text-black py-4 rounded-2xl font-bold mb-4 hover:scale-[1.02] transition-transform">GİRİŞ YAP</button>
+            <button onclick="switchView('menu-view')" class="text-neutral-500 hover:text-white flex items-center justify-center gap-2 mx-auto">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i> İptal
             </button>
         </div>
     </div>
 
-    <!-- ADMIN PANEL VIEW -->
-    <div id="admin-view" class="hidden min-h-screen bg-slate-50 flex flex-col md:flex-row text-slate-900">
-        <aside class="w-full md:w-80 bg-black text-white p-8 flex flex-col gap-10">
-            <div class="flex items-center gap-4">
-                <div class="gold-bg p-3 rounded-2xl text-black"><i data-lucide="layout-dashboard"></i></div>
-                <h1 class="font-black text-2xl leading-none uppercase">Panel</h1>
+    <!-- ADMIN PANEL -->
+    <div id="admin-view" class="hidden min-h-screen bg-[#0a0a0a] flex flex-col md:flex-row">
+        <aside class="w-full md:w-64 bg-black p-6 border-r border-white/5 flex flex-col gap-6">
+            <div class="flex items-center gap-3 gold-text px-2">
+                <i data-lucide="layout-grid" class="w-6 h-6"></i>
+                <span class="font-black text-xl">PANEL</span>
             </div>
-            <nav class="flex flex-col gap-4">
-                <button onclick="showAdminTab('settings')" id="tab-btn-settings"
-                    class="admin-sidebar-item flex items-center gap-4 px-6 py-5 rounded-[1.5rem] text-xl font-black text-slate-500 hover:text-white transition-all">
-                    <i data-lucide="settings"></i> AYARLAR
+            <nav class="flex flex-col gap-2">
+                <button onclick="showAdminTab('settings')" id="tab-btn-settings" class="admin-sidebar-item flex items-center gap-3 p-4 rounded-xl font-bold transition-all">
+                    <i data-lucide="settings" class="w-5 h-5"></i> AYARLAR
                 </button>
-                <button onclick="showAdminTab('categories')" id="tab-btn-categories"
-                    class="admin-sidebar-item flex items-center gap-4 px-6 py-5 rounded-[1.5rem] text-xl font-black text-slate-500 hover:text-white transition-all">
-                    <i data-lucide="palette"></i> KATEGORİLER
+                <button onclick="showAdminTab('categories')" id="tab-btn-categories" class="admin-sidebar-item flex items-center gap-3 p-4 rounded-xl font-bold transition-all">
+                    <i data-lucide="layers" class="w-5 h-5"></i> KATEGORİLER
                 </button>
-                <button onclick="showAdminTab('items')" id="tab-btn-items"
-                    class="admin-sidebar-item flex items-center gap-4 px-6 py-5 rounded-[1.5rem] text-xl font-black text-slate-500 hover:text-white transition-all">
-                    <i data-lucide="utensils"></i> ÜRÜNLER
+                <button onclick="showAdminTab('items')" id="tab-btn-items" class="admin-sidebar-item flex items-center gap-3 p-4 rounded-xl font-bold transition-all">
+                    <i data-lucide="shopping-bag" class="w-5 h-5"></i> ÜRÜNLER
                 </button>
             </nav>
-            <button onclick="switchView('menu-view')"
-                class="mt-auto flex items-center justify-center gap-3 px-6 py-5 rounded-[1.5rem] text-slate-400 border-2 border-slate-800 hover:border-[#D4AF37] transition-all font-black text-xl">
-                <i data-lucide="arrow-left"></i> MENÜYE GİT
+            <button onclick="switchView('menu-view')" class="mt-auto flex items-center justify-center gap-2 p-4 rounded-xl border border-white/10 text-white font-bold hover:bg-white/5">
+                <i data-lucide="external-link" class="w-4 h-4"></i> SİTEYİ GÖR
             </button>
         </aside>
 
-        <main class="flex-grow p-8 md:p-12 overflow-y-auto max-h-screen">
-            <!-- Settings Content -->
-            <div id="admin-tab-settings" class="admin-tab hidden">
-                <div class="max-w-3xl bg-white rounded-[3rem] p-10 shadow-xl border border-slate-100">
-                    <h2 class="text-3xl font-black mb-10 gold-text uppercase text-center">Genel Ayarlar</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 text-slate-600">
+        <main class="flex-grow p-6 md:p-10 overflow-y-auto">
+            <!-- Settings Tab -->
+            <div id="admin-tab-settings" class="admin-tab hidden space-y-8">
+                <div class="max-w-2xl bg-neutral-900 rounded-3xl p-8 border border-white/5">
+                    <h3 class="text-xl font-black mb-6 gold-text">MAĞAZA AYARLARI</h3>
+                    <div class="grid gap-6">
                         <div>
-                            <label class="block text-sm font-black mb-2 uppercase tracking-widest">Dükkan Adı</label>
-                            <input type="text" id="set-shop-name"
-                                class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#D4AF37] text-xl font-bold">
+                            <label class="block text-xs font-bold text-neutral-500 mb-2 uppercase">Dükkan Adı</label>
+                            <input type="text" id="set-shop-name" class="w-full bg-black border border-neutral-800 p-4 rounded-xl focus:ring-1 focus:ring-gold outline-none">
                         </div>
-                        <div>
-                            <label class="block text-sm font-black mb-2 uppercase tracking-widest">Para Birimi</label>
-                            <input type="text" id="set-currency"
-                                class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#D4AF37] text-xl font-bold">
-                        </div>
-                    </div>
-                    <div class="mb-8">
-                        <label
-                            class="block text-sm font-black text-slate-500 mb-2 uppercase tracking-widest">Logo</label>
-                        <div class="flex items-center gap-6 p-4 bg-slate-50 border rounded-2xl">
-                            <img id="set-logo-preview" src=""
-                                class="w-32 h-auto max-h-16 rounded-lg object-contain border bg-black/10">
+                        <div class="flex gap-4">
                             <div class="flex-grow">
-                                <input type="file" id="logo-upload" accept="image/*" class="hidden"
-                                    onchange="handleImageUpload(event, 'logo')">
-                                <button onclick="document.getElementById('logo-upload').click()"
-                                    class="bg-black text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition-all w-full uppercase">Logoyu
-                                    Değiştir</button>
+                                <label class="block text-xs font-bold text-neutral-500 mb-2 uppercase">Para Birimi</label>
+                                <input type="text" id="set-currency" class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-neutral-500 mb-2 uppercase">Renk</label>
+                                <input type="color" id="set-color" class="w-full h-[58px] bg-black border border-neutral-800 p-2 rounded-xl cursor-pointer">
                             </div>
                         </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 text-slate-600">
                         <div>
-                            <label class="block text-sm font-black mb-2 uppercase tracking-widest">Admin Şifresi</label>
-                            <input type="text" id="set-password"
-                                class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#D4AF37] text-xl font-bold">
+                            <label class="block text-xs font-bold text-neutral-500 mb-2 uppercase">Logo (Resim veya GIF)</label>
+                            <div class="flex items-center gap-4 bg-black p-4 rounded-xl border border-neutral-800">
+                                <img id="set-logo-preview" class="h-12 w-20 object-contain rounded bg-white/5">
+                                <input type="file" id="logo-upload" class="hidden" accept="image/*" onchange="previewFile(event, 'logo')">
+                                <button onclick="document.getElementById('logo-upload').click()" class="bg-white/10 px-4 py-2 rounded-lg text-sm font-bold hover:bg-white/20">Dosya Seç</button>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-black mb-2 uppercase tracking-widest">Tema Rengi</label>
-                            <input type="color" id="set-color"
-                                class="w-full h-14 rounded-2xl cursor-pointer border-none bg-transparent p-0">
+                            <label class="block text-xs font-bold text-neutral-500 mb-2 uppercase">Yeni Şifre</label>
+                            <input type="text" id="set-password" class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none">
                         </div>
+                        <button onclick="saveGeneralSettings()" id="save-settings-btn" class="gold-bg text-black py-4 rounded-xl font-black mt-4 hover:brightness-110">GÜNCELLEMELERİ KAYDET</button>
                     </div>
-                    <button onclick="saveGeneralSettings()"
-                        class="w-full bg-black text-[#D4AF37] py-6 rounded-3xl font-black text-2xl uppercase shadow-xl hover:scale-[1.02] transition-transform">Ayarları
-                        Kaydet</button>
                 </div>
             </div>
 
-            <!-- Categories Content -->
+            <!-- Categories Tab -->
             <div id="admin-tab-categories" class="admin-tab hidden">
-                <div class="max-w-3xl bg-white rounded-[3rem] p-10 shadow-xl border border-slate-100">
-                    <h2 class="text-3xl font-black mb-10 gold-text uppercase">Kategoriler</h2>
-                    <div class="flex gap-4 mb-10">
-                        <input type="text" id="new-cat-input" placeholder="Yeni kategori adı..."
-                            class="flex-grow p-5 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-xl font-bold">
-                        <button onclick="addCategory()"
-                            class="bg-black text-[#D4AF37] px-8 rounded-2xl hover:brightness-110"><i
-                                data-lucide="plus"></i></button>
+                <div class="max-w-2xl bg-neutral-900 rounded-3xl p-8 border border-white/5">
+                    <h3 class="text-xl font-black mb-6 gold-text">KATEGORİ YÖNETİMİ</h3>
+                    <div class="flex gap-2 mb-8">
+                        <input type="text" id="new-cat-input" placeholder="Örn: Kebaplar" class="flex-grow bg-black border border-neutral-800 p-4 rounded-xl outline-none">
+                        <button onclick="addCategory()" class="gold-bg text-black px-6 rounded-xl"><i data-lucide="plus"></i></button>
                     </div>
-                    <div id="admin-category-list" class="space-y-4"></div>
+                    <div id="admin-category-list" class="space-y-2"></div>
                 </div>
             </div>
 
-            <!-- Items Content -->
+            <!-- Items Tab -->
             <div id="admin-tab-items" class="admin-tab hidden">
-                <div class="max-w-5xl bg-white rounded-[3rem] p-10 shadow-xl border border-slate-100">
-                    <div class="flex justify-between items-center mb-10">
-                        <h2 class="text-3xl font-black gold-text uppercase">Ürün Yönetimi</h2>
-                        <button onclick="openItemModal()"
-                            class="bg-black text-[#D4AF37] px-8 py-4 rounded-2xl font-black text-xl flex items-center gap-2 hover:scale-105 transition-transform">
-                            <i data-lucide="plus"></i> ÜRÜN EKLE
-                        </button>
-                    </div>
-                    <div id="admin-item-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-xl font-black gold-text">ÜRÜNLER</h3>
+                    <button onclick="openItemModal()" class="gold-bg text-black px-6 py-3 rounded-xl font-bold flex items-center gap-2">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i> ÜRÜN EKLE
+                    </button>
                 </div>
+                <div id="admin-item-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
             </div>
         </main>
     </div>
 
     <!-- ITEM MODAL -->
     <div id="item-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-6">
-        <div id="modal-overlay" class="absolute inset-0 bg-black/80" onclick="closeItemModal()"></div>
-        <div class="relative bg-white rounded-[4rem] p-10 w-full max-w-2xl shadow-2xl text-slate-800">
-            <div class="flex justify-between items-center mb-8">
-                <h3 id="modal-title" class="text-3xl font-black uppercase">Ürün Bilgileri</h3>
-                <button onclick="closeItemModal()"><i data-lucide="x" class="w-10 h-10"></i></button>
-            </div>
-            <div class="space-y-6 text-left">
-                <div class="flex items-center gap-6 p-4 bg-slate-50 rounded-3xl border border-dashed">
-                    <div class="w-32 h-32 rounded-3xl bg-white border flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-md" onclick="closeItemModal()"></div>
+        <div class="relative bg-neutral-900 rounded-[2.5rem] p-8 w-full max-w-xl border border-white/10 shadow-2xl">
+            <h3 id="modal-title" class="text-xl font-black mb-6 gold-text uppercase">Ürün Detayı</h3>
+            <div class="space-y-4">
+                <div class="flex gap-4 items-center p-4 bg-black rounded-2xl border border-neutral-800">
+                    <div class="w-24 h-24 rounded-xl bg-neutral-800 flex items-center justify-center overflow-hidden border border-white/5">
                         <img id="item-img-preview" src="" class="hidden w-full h-full object-cover">
-                        <i id="item-img-placeholder" data-lucide="image" class="text-slate-300 w-12 h-12"></i>
+                        <i id="item-img-placeholder" data-lucide="image" class="text-neutral-600"></i>
                     </div>
                     <div class="flex-grow">
-                        <label class="block text-sm font-black text-slate-500 mb-2 uppercase">Görsel Seç</label>
-                        <input type="file" id="item-img-upload" accept="image/*" class="hidden"
-                            onchange="handleImageUpload(event, 'item')">
-                        <button onclick="document.getElementById('item-img-upload').click()"
-                            class="bg-black text-white px-6 py-3 rounded-xl font-bold w-full uppercase">Fotoğraf
-                            Yükle</button>
+                        <label class="block text-[10px] font-bold text-neutral-500 mb-2 uppercase">Görsel / GIF</label>
+                        <input type="file" id="item-img-upload" class="hidden" accept="image/*" onchange="previewFile(event, 'item')">
+                        <button onclick="document.getElementById('item-img-upload').click()" class="w-full bg-white/5 border border-white/10 py-2 rounded-lg text-sm font-bold hover:bg-white/10 transition-all">Dosya Yükle</button>
                     </div>
                 </div>
-                <input type="text" id="item-name-input" placeholder="Ürün Adı"
-                    class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-xl font-bold">
+                <input type="text" id="item-name-input" placeholder="Ürün Adı" class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none">
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="number" id="item-price-input" placeholder="Fiyat"
-                        class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-xl font-bold">
-                    <select id="item-cat-select"
-                        class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-xl font-bold uppercase"></select>
+                    <input type="text" id="item-price-input" placeholder="Fiyat" class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none">
+                    <select id="item-cat-select" class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none"></select>
                 </div>
-                <textarea id="item-desc-input" placeholder="Açıklama..."
-                    class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none h-24 text-lg"></textarea>
-                <button id="save-item-btn" onclick="saveItem()"
-                    class="w-full bg-black text-[#D4AF37] py-6 rounded-[2rem] font-black text-2xl uppercase">Kaydet</button>
+                <textarea id="item-desc-input" placeholder="Ürün açıklaması, içeriği..." class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none h-24 resize-none"></textarea>
+                <button id="save-item-btn" onclick="saveItem()" class="w-full gold-bg text-black py-4 rounded-2xl font-black text-lg">KAYDET</button>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK (İsteğe Bağlı) -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
 
         // CONFIG
-        const manualFirebaseConfig = {
-            apiKey: "AIzaSyAW2AOrkNufhOz4jfoStXRLqONSpVIBhSI",
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "", 
             authDomain: "alaturka-doner.firebaseapp.com",
             projectId: "alaturka-doner",
             storageBucket: "alaturka-doner.firebasestorage.app",
             messagingSenderId: "505768016647",
-            appId: "1:505768016647:web:b0078148adaf4c21bae3a2",
-            measurementId: "G-W5RE5765MF"
+            appId: "1:505768016647:web:b0078148adaf4c21bae3a2"
         };
-        const firebaseConfig = manualFirebaseConfig || (typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-offline-menu';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'alaturka-v2';
 
         // STATE
-        let settings = { shopName: "Premium Menü", logoUrl: "", primaryColor: "#D4AF37", currency: "₺", adminPassword: "admin" };
+        let settings = { shopName: "Alaturka Döner", logoUrl: "", primaryColor: "#D4AF37", currency: "₺", adminPassword: "admin" };
         let categories = [];
         let items = [];
         let editingItemId = null;
         let selectedCategory = 'All';
-        let currentLogoBase64 = null;
-        let currentItemImageBase64 = null;
-        let isFirstLoad = true;
-        let useFirebase = !!firebaseConfig;
+        let pendingFiles = { logo: null, item: null };
 
-        // MOD GÖSTERGESİ
-        document.getElementById('app-mode').innerText = useFirebase ? "Canlı Mod (Firebase)" : "Çevrimdışı Mod (LocalStorage)";
+        // INITIALIZATION
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) {
+                console.error("Auth Error:", err);
+            }
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    setupListeners();
+                }
+            });
+        }
+
+        function setupListeners() {
+            // Settings Listener
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config'), (snap) => {
+                if (snap.exists()) {
+                    settings = snap.data();
+                    applySettings();
+                } else {
+                    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config'), settings);
+                }
+            });
+
+            // Categories Listener
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'categories'), (snap) => {
+                categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderCategories();
+            });
+
+            // Items Listener
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'items'), (snap) => {
+                items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderMenu();
+                renderAdminItems();
+                
+                document.getElementById('loading-screen').classList.add('hidden');
+                document.getElementById('menu-view').classList.remove('hidden');
+            });
+        }
 
         // HELPERS
         window.switchView = (viewId) => {
-            document.getElementById('menu-view').classList.add('hidden');
-            document.getElementById('login-view').classList.add('hidden');
-            document.getElementById('admin-view').classList.add('hidden');
+            ['menu-view', 'login-view', 'admin-view'].forEach(v => document.getElementById(v).classList.add('hidden'));
             document.getElementById(viewId).classList.remove('hidden');
-            window.scrollTo(0, 0);
+            window.scrollTo(0,0);
             lucide.createIcons();
         };
 
         window.showAdminTab = (tabId) => {
             document.querySelectorAll('.admin-tab').forEach(t => t.classList.add('hidden'));
-            document.querySelectorAll('.admin-sidebar-item').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.admin-sidebar-item').forEach(b => b.classList.remove('active', 'gold-bg', 'text-black'));
             document.getElementById(`admin-tab-${tabId}`).classList.remove('hidden');
-            document.getElementById(`tab-btn-${tabId}`).classList.add('active');
+            const btn = document.getElementById(`tab-btn-${tabId}`);
+            btn.classList.add('active', 'gold-bg', 'text-black');
             lucide.createIcons();
         };
 
-        window.handleImageUpload = async (e, mode) => {
+        window.previewFile = (e, mode) => {
             const file = e.target.files[0];
             if (!file) return;
+            pendingFiles[mode] = file;
+            
             const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX = 1000;
-                    let w = img.width, h = img.height;
-                    if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
-                    else { if (h > MAX) { w *= MAX / h; h = MAX; } }
-                    canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    const base64 = canvas.toDataURL('image/jpeg', 0.7);
-                    if (mode === 'logo') {
-                        currentLogoBase64 = base64;
-                        document.getElementById('set-logo-preview').src = base64;
-                    } else {
-                        currentItemImageBase64 = base64;
-                        document.getElementById('item-img-preview').src = base64;
-                        document.getElementById('item-img-preview').classList.remove('hidden');
-                        document.getElementById('item-img-placeholder').classList.add('hidden');
-                    }
-                };
+            reader.onload = (ev) => {
+                const previewImg = mode === 'logo' ? document.getElementById('set-logo-preview') : document.getElementById('item-img-preview');
+                previewImg.src = ev.target.result;
+                previewImg.classList.remove('hidden');
+                if (mode === 'item') document.getElementById('item-img-placeholder').classList.add('hidden');
             };
+            reader.readAsDataURL(file);
         };
 
-        // --- VERİ YÖNETİMİ (HYBRID: FIREBASE VEYA LOCALSTORAGE) ---
+        async function uploadFile(file, path) {
+            const fileRef = ref(storage, `artifacts/${appId}/${path}/${Date.now()}_${file.name}`);
+            await uploadBytes(fileRef, file);
+            return await getDownloadURL(fileRef);
+        }
 
-        const notifyUI = () => {
-            renderSettings();
-            renderCategories();
-            renderCategoryScroller();
-            renderMenuItems();
-            renderAdminItems();
-            if (isFirstLoad) {
-                document.getElementById('loading-screen').classList.add('hidden');
-                switchView('menu-view');
-                isFirstLoad = false;
+        // CRUD
+        window.saveGeneralSettings = async () => {
+            const btn = document.getElementById('save-settings-btn');
+            btn.disabled = true;
+            btn.innerText = "YÜKLENİYOR...";
+
+            try {
+                let logoUrl = settings.logoUrl;
+                if (pendingFiles.logo) {
+                    logoUrl = await uploadFile(pendingFiles.logo, 'brand');
+                    pendingFiles.logo = null;
+                }
+
+                const newSettings = {
+                    shopName: document.getElementById('set-shop-name').value,
+                    currency: document.getElementById('set-currency').value,
+                    primaryColor: document.getElementById('set-color').value,
+                    adminPassword: document.getElementById('set-password').value,
+                    logoUrl: logoUrl
+                };
+
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config'), newSettings);
+                alert("Güncellendi.");
+            } catch (err) {
+                alert("Hata: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "GÜNCELLEMELERİ KAYDET";
             }
         };
 
-        if (!useFirebase) {
-            // LOCAL STORAGE MODE (HİÇBİR AYAR GEREKTİRMEZ)
-            const loadLocal = () => {
-                const s = localStorage.getItem(`${appId}_settings`);
-                if (s) settings = JSON.parse(s);
-                const c = localStorage.getItem(`${appId}_categories`);
-                if (c) categories = JSON.parse(c);
-                const i = localStorage.getItem(`${appId}_items`);
-                if (i) items = JSON.parse(i);
-                notifyUI();
-            };
+        window.addCategory = async () => {
+            const name = document.getElementById('new-cat-input').value;
+            if (!name) return;
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'categories'), { name });
+            document.getElementById('new-cat-input').value = '';
+        };
 
-            window.saveGeneralSettings = () => {
-                settings = {
-                    shopName: document.getElementById('set-shop-name').value,
-                    currency: document.getElementById('set-currency').value,
-                    adminPassword: document.getElementById('set-password').value,
-                    primaryColor: document.getElementById('set-color').value,
-                    logoUrl: currentLogoBase64
-                };
-                localStorage.setItem(`${appId}_settings`, JSON.stringify(settings));
-                notifyUI();
-                alert("Kaydedildi!");
-            };
+        window.deleteCategory = async (id) => {
+            if (confirm("Silmek istediğinize emin misiniz?")) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', id));
+            }
+        };
 
-            window.addCategory = () => {
-                const name = document.getElementById('new-cat-input').value;
-                if (!name) return;
-                categories.push({ id: Date.now().toString(), name });
-                localStorage.setItem(`${appId}_categories`, JSON.stringify(categories));
-                document.getElementById('new-cat-input').value = '';
-                notifyUI();
-            };
+        window.saveItem = async () => {
+            const btn = document.getElementById('save-item-btn');
+            btn.disabled = true;
+            btn.innerText = "YÜKLENİYOR...";
 
-            window.deleteCategory = (id) => {
-                categories = categories.filter(c => c.id !== id);
-                localStorage.setItem(`${appId}_categories`, JSON.stringify(categories));
-                notifyUI();
-            };
+            try {
+                let imageUrl = editingItemId ? items.find(i => i.id === editingItemId).imageUrl : "";
+                if (pendingFiles.item) {
+                    imageUrl = await uploadFile(pendingFiles.item, 'products');
+                    pendingFiles.item = null;
+                }
 
-            window.saveItem = () => {
-                const data = {
-                    id: editingItemId || Date.now().toString(),
+                const itemData = {
                     name: document.getElementById('item-name-input').value,
                     price: document.getElementById('item-price-input').value,
                     description: document.getElementById('item-desc-input').value,
                     categoryId: document.getElementById('item-cat-select').value,
-                    imageUrl: currentItemImageBase64
+                    imageUrl: imageUrl
                 };
-                if (editingItemId) items = items.map(i => i.id === editingItemId ? data : i);
-                else items.push(data);
-                localStorage.setItem(`${appId}_items`, JSON.stringify(items));
+
+                if (editingItemId) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'items', editingItemId), itemData);
+                } else {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'items'), itemData);
+                }
                 closeItemModal();
-                notifyUI();
-            };
-
-            window.deleteItem = (id) => {
-                items = items.filter(i => i.id !== id);
-                localStorage.setItem(`${appId}_items`, JSON.stringify(items));
-                notifyUI();
-            };
-
-            setTimeout(loadLocal, 1000);
-
-        } else {
-            // FIREBASE MODE
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const db = getFirestore(app);
-
-            const storage = getStorage(app);
-
-            // GLOBAL FILE STATE (For Upload)
-            let selectedLogoFile = null;
-            let selectedItemFile = null;
-
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config'), (snap) => {
-                        if (snap.exists()) settings = snap.data();
-                        else setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config'), settings);
-                        renderSettings();
-                    });
-                    onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'categories'), (snap) => {
-                        categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                        renderCategories();
-                        renderCategoryScroller();
-                    });
-                    onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'items'), (snap) => {
-                        items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                        notifyUI();
-                    });
-                } else {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) signInWithCustomToken(auth, __initial_auth_token);
-                    else signInAnonymously(auth);
-                }
-            });
-
-            // UPLOAD HELPER
-            async function uploadImageToStorage(file, path) {
-                if (!file) return null;
-                const storageRef = ref(storage, path);
-                await uploadBytes(storageRef, file);
-                return await getDownloadURL(storageRef);
+            } catch (err) {
+                alert("Hata: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "KAYDET";
             }
+        };
 
-            // OVERRIDE HANDLE IMAGE UPLOAD FOR FIREBASE MODE
-            // We need to override the global function defined in Helpers section for Firebase specific behavior
-            // But since the original is global, we can just intercept the logic inside the event handler or modify the global one if possible.
-            // A better approach is to modify the global 'handleImageUpload' to be aware of the mode or just use a different logic here.
+        window.deleteItem = async (id) => {
+            if (confirm("Ürünü silmek istiyor musunuz?")) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'items', id));
+            }
+        };
 
-            // To keep it clean, let's redefine the behavior for Firebase mode by hooking into the file inputs directly or 
-            // modifying standard behavior. However, simpler is to check 'useFirebase' in the main function.
-            // Let's modify the 'save' functions to handle the upload.
-
-            window.saveGeneralSettings = async () => {
-                const btn = document.querySelector('button[onclick="saveGeneralSettings()"]');
-                const originalText = btn.innerText;
-                btn.innerText = "Yükleniyor...";
-                btn.disabled = true;
-
-                try {
-                    let newLogoUrl = settings.logoUrl;
-                    if (selectedLogoFile) {
-                        const path = `settings/logo_${Date.now()}_${selectedLogoFile.name}`;
-                        newLogoUrl = await uploadImageToStorage(selectedLogoFile, path);
-                    }
-
-                    const data = {
-                        shopName: document.getElementById('set-shop-name').value,
-                        currency: document.getElementById('set-currency').value,
-                        adminPassword: document.getElementById('set-password').value,
-                        primaryColor: document.getElementById('set-color').value,
-                        logoUrl: newLogoUrl
-                    };
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config'), data);
-
-                    // Reset file selection
-                    selectedLogoFile = null;
-                    alert("Kaydedildi!");
-                } catch (error) {
-                    console.error("Upload Error:", error);
-                    alert("Hata oluştu: " + error.message);
-                } finally {
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                }
-            };
-
-            window.addCategory = async () => {
-                const name = document.getElementById('new-cat-input').value;
-                if (!name) return;
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'categories'), { name });
-                document.getElementById('new-cat-input').value = '';
-            };
-
-            window.deleteCategory = async (id) => {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', id));
-            };
-
-            window.saveItem = async () => {
-                const btn = document.getElementById('save-item-btn');
-                const originalText = btn.innerText;
-                btn.innerText = "Yükleniyor...";
-                btn.disabled = true;
-
-                try {
-                    let newImageUrl = currentItemImageBase64; // Default to existing URL/Base64
-
-                    // If a new file is selected, upload it
-                    if (selectedItemFile) {
-                        const path = `items/${Date.now()}_${selectedItemFile.name}`;
-                        newImageUrl = await uploadImageToStorage(selectedItemFile, path);
-                    }
-
-                    const data = {
-                        name: document.getElementById('item-name-input').value,
-                        price: document.getElementById('item-price-input').value,
-                        description: document.getElementById('item-desc-input').value,
-                        categoryId: document.getElementById('item-cat-select').value,
-                        imageUrl: newImageUrl
-                    };
-
-                    if (editingItemId) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'items', editingItemId), data);
-                    else await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'items'), data);
-
-                    // Reset
-                    selectedItemFile = null;
-                    closeItemModal();
-                } catch (error) {
-                    console.error("Upload Error:", error);
-                    alert("Hata oluştu: " + error.message);
-                } finally {
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                }
-            };
-
-            window.deleteItem = async (id) => {
-                if (confirm("Silmek istediğinize emin misiniz?")) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'items', id));
-                }
-            };
-
-            // Hook into the global handleImageUpload to capture the file object in Firebase mode
-            const originalHandleImageUpload = window.handleImageUpload;
-            window.handleImageUpload = async (e, mode) => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                // In Firebase mode, we just want to preview it and store the file object
-                if (mode === 'logo') selectedLogoFile = file;
-                else selectedItemFile = file;
-
-                // For preview, we can simply use the file reader or object URL
-                // The original function does resizing/canvas which is fine for preview
-                // BUT we want to preserve GIF animation in preview too if possible.
-
-                if (file.type === 'image/gif') {
-                    // Direct preview for GIFs to show animation
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const base64 = event.target.result;
-                        if (mode === 'logo') {
-                            currentLogoBase64 = base64; // Keep for fallback/display
-                            document.getElementById('set-logo-preview').src = base64;
-                        } else {
-                            currentItemImageBase64 = base64; // Keep for fallback/display
-                            document.getElementById('item-img-preview').src = base64;
-                            document.getElementById('item-img-preview').classList.remove('hidden');
-                            document.getElementById('item-img-placeholder').classList.add('hidden');
-                        }
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    // Fallback to original resizing for non-GIFs (or just use original function logic)
-                    await originalHandleImageUpload(e, mode);
-                }
-            };
-        }
-
-        // RENDER FUNCTIONS (SHARED)
-        function renderSettings() {
+        // RENDERERS
+        function applySettings() {
             document.getElementById('shop-name').innerText = settings.shopName;
-            document.getElementById('shop-logo').src = settings.logoUrl || 'https://via.placeholder.com/600x200?text=LOGO';
+            document.getElementById('shop-logo').src = settings.logoUrl || 'https://via.placeholder.com/200x80?text=LOGO';
             document.documentElement.style.setProperty('--gold', settings.primaryColor);
+            
             document.getElementById('set-shop-name').value = settings.shopName;
             document.getElementById('set-currency').value = settings.currency;
-            document.getElementById('set-password').value = settings.adminPassword;
             document.getElementById('set-color').value = settings.primaryColor;
+            document.getElementById('set-password').value = settings.adminPassword;
             document.getElementById('set-logo-preview').src = settings.logoUrl;
-            currentLogoBase64 = settings.logoUrl;
         }
 
-        function renderCategoryScroller() {
-            const container = document.getElementById('category-list');
-            let html = `<button onclick="setFilter('All')" class="px-8 py-3 rounded-full whitespace-nowrap text-lg font-bold border ${selectedCategory === 'All' ? 'gold-bg text-black' : 'text-gray-400 border-white/10'}">TÜMÜ</button>`;
-            categories.forEach(c => {
-                html += `<button onclick="setFilter('${c.id}')" class="px-8 py-3 rounded-full whitespace-nowrap text-lg font-bold border ${selectedCategory === c.id ? 'gold-bg text-black' : 'text-gray-400 border-white/10'}">${c.name.toUpperCase()}</button>`;
-            });
-            container.innerHTML = html;
+        function renderCategories() {
+            const adminList = document.getElementById('admin-category-list');
+            const menuList = document.getElementById('category-list');
+            const select = document.getElementById('item-cat-select');
+
+            adminList.innerHTML = categories.map(c => `
+                <div class="flex items-center justify-between p-4 bg-black rounded-xl border border-neutral-800">
+                    <span class="font-bold text-sm uppercase">${c.name}</span>
+                    <button onclick="deleteCategory('${c.id}')" class="text-red-500 hover:bg-red-500/10 p-2 rounded-lg transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            `).join('');
+
+            menuList.innerHTML = `
+                <button onclick="window.filterCat('All')" class="px-6 py-3 rounded-xl font-black whitespace-nowrap border ${selectedCategory === 'All' ? 'gold-bg text-black border-gold' : 'bg-white/5 text-neutral-400 border-white/10'} transition-all uppercase text-xs tracking-widest">TÜMÜ</button>
+                ${categories.map(c => `
+                    <button onclick="window.filterCat('${c.id}')" class="px-6 py-3 rounded-xl font-black whitespace-nowrap border ${selectedCategory === c.id ? 'gold-bg text-black border-gold' : 'bg-white/5 text-neutral-400 border-white/10'} transition-all uppercase text-xs tracking-widest">${c.name}</button>
+                `).join('')}
+            `;
+
+            select.innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            lucide.createIcons();
         }
 
-        function renderMenuItems() {
-            const container = document.getElementById('product-grid');
-            const search = document.getElementById('menu-search').value.toLowerCase();
+        window.filterCat = (id) => {
+            selectedCategory = id;
+            renderCategories();
+            renderMenu();
+        };
+
+        function renderMenu() {
+            const grid = document.getElementById('product-grid');
+            const searchTerm = document.getElementById('menu-search').value.toLowerCase();
+
             const filtered = items.filter(i => {
-                const matchSearch = (i.name || "").toLowerCase().includes(search);
+                const matchSearch = i.name.toLowerCase().includes(searchTerm) || i.description.toLowerCase().includes(searchTerm);
                 const matchCat = selectedCategory === 'All' || i.categoryId === selectedCategory;
                 return matchSearch && matchCat;
             });
 
-            // Grid sistemi md ekranlarda md:grid-cols-2'den grid-cols-1'e çekildi (Asla yan yana gelmesin)
-            container.innerHTML = filtered.map(i => `
-                <div class="menu-card rounded-[2.5rem] p-5 flex flex-col sm:flex-row gap-6">
-                    <img src="${i.imageUrl || 'https://via.placeholder.com/400'}" class="w-full sm:w-48 h-48 md:h-auto object-cover rounded-[2rem] flex-shrink-0">
-                    <div class="product-content flex-grow py-2">
+            grid.innerHTML = filtered.map(i => `
+                <div class="menu-card rounded-[2rem] p-4 gap-5">
+                    <div class="relative w-full md:w-40 h-40 flex-shrink-0 overflow-hidden rounded-2xl border border-white/5">
+                        <img src="${i.imageUrl || 'https://via.placeholder.com/400?text=Lezzet'}" loading="lazy" class="product-img w-full h-full">
+                    </div>
+                    <div class="product-info flex flex-col justify-between h-full py-1 pr-2">
                         <div>
-                            <h3 class="font-black text-2xl gold-text break-words mb-2">${i.name}</h3>
-                            <p class="text-gray-400 text-lg leading-relaxed mb-4">${i.description || ""}</p>
+                            <h3 class="text-xl font-black gold-text mb-2 uppercase tracking-tight">${i.name}</h3>
+                            <p class="text-neutral-500 text-sm leading-snug mb-4">${i.description}</p>
                         </div>
-                        <div class="text-3xl font-black gold-text">${i.price} ${settings.currency}</div>
+                        <div class="text-2xl font-black text-white mt-auto">
+                            ${i.price} <span class="text-xs gold-text ml-0.5">${settings.currency}</span>
+                        </div>
                     </div>
                 </div>
             `).join('');
-            lucide.createIcons();
-        }
-
-        function renderCategories() {
-            const container = document.getElementById('admin-category-list');
-            container.innerHTML = categories.map(c => `
-                <div class="flex items-center justify-between p-6 bg-slate-50 rounded-[2rem] border">
-                    <span class="text-xl font-bold uppercase">${c.name}</span>
-                    <button onclick="deleteCategory('${c.id}')" class="text-red-500"><i data-lucide="trash-2"></i></button>
-                </div>
-            `).join('');
-            document.getElementById('item-cat-select').innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-20 text-center opacity-20"><i data-lucide="utensils-cross" class="w-20 h-20 mx-auto mb-4"></i><p class="text-xl font-black uppercase">Sonuç Bulunamadı</p></div>`;
+            }
             lucide.createIcons();
         }
 
         function renderAdminItems() {
-            const container = document.getElementById('admin-item-grid');
-            container.innerHTML = items.map(i => `
-                <div class="p-4 bg-slate-50 rounded-[2.5rem] border flex flex-col h-full">
-                    <img src="${i.imageUrl || 'https://via.placeholder.com/400'}" class="w-full h-40 object-cover rounded-3xl mb-4 flex-shrink-0">
-                    <div class="flex-grow">
-                        <h4 class="font-black text-xl mb-1">${i.name}</h4>
-                        <p class="font-black gold-text mb-4">${i.price} TL</p>
-                    </div>
+            const grid = document.getElementById('admin-item-grid');
+            grid.innerHTML = items.map(i => `
+                <div class="bg-neutral-900 border border-white/5 p-4 rounded-3xl flex flex-col">
+                    <img src="${i.imageUrl}" class="w-full h-32 object-cover rounded-xl mb-4 bg-black">
+                    <h4 class="font-bold text-sm mb-1 uppercase truncate">${i.name}</h4>
+                    <p class="text-gold font-black text-lg mb-4">${i.price} ${settings.currency}</p>
                     <div class="flex gap-2 mt-auto">
-                        <button onclick="openItemModal('${i.id}')" class="flex-grow py-3 bg-white rounded-xl border font-bold">DÜZENLE</button>
-                        <button onclick="deleteItem('${i.id}')" class="p-3 text-red-500 bg-red-50 rounded-xl"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                        <button onclick="openItemModal('${i.id}')" class="flex-grow bg-white/5 hover:bg-white/10 py-2 rounded-lg text-xs font-bold transition-all uppercase">Düzenle</button>
+                        <button onclick="deleteItem('${i.id}')" class="bg-red-500/10 text-red-500 p-2 rounded-lg hover:bg-red-500 hover:text-white transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                 </div>
             `).join('');
             lucide.createIcons();
         }
 
-        window.setFilter = (id) => { selectedCategory = id; renderCategoryScroller(); renderMenuItems(); };
         window.handleAdminLogin = () => {
-            if (document.getElementById('admin-pass-input').value === settings.adminPassword) {
+            const pass = document.getElementById('admin-pass-input').value;
+            if (pass === settings.adminPassword) {
                 switchView('admin-view');
                 showAdminTab('settings');
+                document.getElementById('admin-pass-input').value = "";
                 document.getElementById('login-error').classList.add('hidden');
-            } else document.getElementById('login-error').classList.remove('hidden');
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
         };
+
         window.openItemModal = (id = null) => {
             editingItemId = id;
+            const modal = document.getElementById('item-modal');
+            const preview = document.getElementById('item-img-preview');
+            const placeholder = document.getElementById('item-img-placeholder');
+
             if (id) {
                 const i = items.find(x => x.id === id);
                 document.getElementById('item-name-input').value = i.name;
                 document.getElementById('item-price-input').value = i.price;
-                document.getElementById('item-desc-input').value = i.description || "";
+                document.getElementById('item-desc-input').value = i.description;
                 document.getElementById('item-cat-select').value = i.categoryId;
-                document.getElementById('item-img-preview').src = i.imageUrl || "";
-                document.getElementById('item-img-preview').classList.toggle('hidden', !i.imageUrl);
-                document.getElementById('item-img-placeholder').classList.toggle('hidden', !!i.imageUrl);
-                currentItemImageBase64 = i.imageUrl;
+                preview.src = i.imageUrl;
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
             } else {
-                document.getElementById('item-name-input').value = '';
-                document.getElementById('item-price-input').value = '';
-                document.getElementById('item-desc-input').value = '';
-                document.getElementById('item-img-preview').classList.add('hidden');
-                document.getElementById('item-img-placeholder').classList.remove('hidden');
-                currentItemImageBase64 = null;
+                document.getElementById('item-name-input').value = "";
+                document.getElementById('item-price-input').value = "";
+                document.getElementById('item-desc-input').value = "";
+                preview.classList.add('hidden');
+                placeholder.classList.remove('hidden');
             }
-            document.getElementById('item-modal').classList.remove('hidden');
+            modal.classList.remove('hidden');
             lucide.createIcons();
         };
+
         window.closeItemModal = () => document.getElementById('item-modal').classList.add('hidden');
-        document.getElementById('menu-search').addEventListener('input', renderMenuItems);
-        lucide.createIcons();
+
+        document.getElementById('menu-search').addEventListener('input', renderMenu);
+
+        initAuth();
+
     </script>
 </body>
-
 </html>
