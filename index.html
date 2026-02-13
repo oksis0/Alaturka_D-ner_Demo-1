@@ -21,12 +21,23 @@
             overflow-x: hidden;
         }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
 
-        .gold-text { color: var(--gold); }
-        .gold-bg { background-color: var(--gold); }
-        
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .gold-text {
+            color: var(--gold);
+        }
+
+        .gold-bg {
+            background-color: var(--gold);
+        }
+
         .menu-card {
             background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
             border: 1px solid rgba(212, 175, 55, 0.1);
@@ -41,7 +52,7 @@
         @media (min-width: 768px) {
             .menu-card {
                 flex-direction: row;
-                width: fit-content; 
+                width: fit-content;
                 min-width: 350px;
                 max-width: 600px;
                 height: auto;
@@ -67,7 +78,9 @@
             color: #000;
         }
 
-        #loading-screen { backdrop-filter: blur(20px); }
+        #loading-screen {
+            backdrop-filter: blur(20px);
+        }
     </style>
 </head>
 
@@ -78,7 +91,8 @@
     <!-- LOADING SCREEN -->
     <div id="loading-screen" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center gap-6">
         <i data-lucide="utensils" class="w-16 h-16 text-[#D4AF37] animate-bounce"></i>
-        <p class="text-[#D4AF37] font-black text-2xl tracking-[0.3em] uppercase animate-pulse">Lezzetler Hazırlanıyor...</p>
+        <p class="text-[#D4AF37] font-black text-2xl tracking-[0.3em] uppercase animate-pulse">Lezzetler Hazırlanıyor...
+        </p>
     </div>
 
     <!-- MAIN MENU VIEW -->
@@ -87,7 +101,8 @@
             <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col items-center gap-4 relative">
                 <img id="shop-logo" src="" alt="Logo" class="h-16 md:h-24 w-auto object-contain rounded-xl">
                 <h1 id="shop-name" class="text-xl md:text-2xl font-black tracking-widest text-[#D4AF37] uppercase"></h1>
-                <button onclick="switchView('login-view')" class="absolute right-6 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-gold">
+                <button onclick="switchView('login-view')"
+                    class="absolute right-6 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-gold">
                     <i data-lucide="shield-check" class="w-6 h-6"></i>
                 </button>
             </div>
@@ -99,7 +114,9 @@
                 <input type="text" id="menu-search" placeholder="Menüde ara..."
                     class="w-full pl-14 pr-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-white focus:ring-2 focus:ring-[#D4AF37]/50 outline-none transition-all">
             </div>
-            <div id="category-list" class="flex gap-3 overflow-x-auto pb-6 no-scrollbar scroll-smooth mb-10 justify-start md:justify-center"></div>
+            <div id="category-list"
+                class="flex gap-3 overflow-x-auto pb-6 no-scrollbar scroll-smooth mb-10 justify-start md:justify-center">
+            </div>
             <div id="product-grid" class="flex flex-wrap gap-6 justify-center items-stretch"></div>
         </main>
     </div>
@@ -111,8 +128,10 @@
             <input type="password" id="admin-pass-input" placeholder="Şifre"
                 class="w-full px-6 py-4 bg-black border border-neutral-800 rounded-xl mb-4 text-center text-xl focus:ring-1 focus:ring-gold outline-none">
             <div id="login-error" class="text-red-500 text-xs mb-4 hidden">Hatalı şifre!</div>
-            <button onclick="handleAdminLogin()" class="w-full gold-bg text-black py-4 rounded-xl font-bold mb-4">GİRİŞ</button>
-            <button onclick="switchView('menu-view')" class="text-neutral-500 text-sm hover:text-white">Geri Dön</button>
+            <button onclick="handleAdminLogin()"
+                class="w-full gold-bg text-black py-4 rounded-xl font-bold mb-4">GİRİŞ</button>
+            <button onclick="switchView('menu-view')" class="text-neutral-500 text-sm hover:text-white">Geri
+                Dön</button>
         </div>
     </div>
 
@@ -121,11 +140,16 @@
         <aside class="w-full md:w-64 bg-black p-6 border-r border-white/5 flex flex-col gap-4">
             <div class="font-black text-xl gold-text mb-4 uppercase">Yönetim</div>
             <nav class="flex flex-col gap-2">
-                <button onclick="showAdminTab('settings')" id="tab-btn-settings" class="admin-sidebar-item flex items-center gap-3 p-4 rounded-xl font-bold transition-all uppercase text-xs">Ayarlar</button>
-                <button onclick="showAdminTab('categories')" id="tab-btn-categories" class="admin-sidebar-item flex items-center gap-3 p-4 rounded-xl font-bold transition-all uppercase text-xs">Kategoriler</button>
-                <button onclick="showAdminTab('items')" id="tab-btn-items" class="admin-sidebar-item flex items-center gap-3 p-4 rounded-xl font-bold transition-all uppercase text-xs">Ürünler</button>
+                <button onclick="showAdminTab('settings')" id="tab-btn-settings"
+                    class="admin-sidebar-item flex items-center gap-3 p-4 rounded-xl font-bold transition-all uppercase text-xs">Ayarlar</button>
+                <button onclick="showAdminTab('categories')" id="tab-btn-categories"
+                    class="admin-sidebar-item flex items-center gap-3 p-4 rounded-xl font-bold transition-all uppercase text-xs">Kategoriler</button>
+                <button onclick="showAdminTab('items')" id="tab-btn-items"
+                    class="admin-sidebar-item flex items-center gap-3 p-4 rounded-xl font-bold transition-all uppercase text-xs">Ürünler</button>
             </nav>
-            <button onclick="switchView('menu-view')" class="mt-auto p-4 rounded-xl border border-white/10 text-white font-bold hover:bg-white/5 text-xs">MENÜYÜ GÖR</button>
+            <button onclick="switchView('menu-view')"
+                class="mt-auto p-4 rounded-xl border border-white/10 text-white font-bold hover:bg-white/5 text-xs">MENÜYÜ
+                GÖR</button>
         </aside>
 
         <main class="flex-grow p-6 md:p-10 overflow-y-auto">
@@ -134,18 +158,25 @@
                 <div class="max-w-xl bg-neutral-900 rounded-2xl p-6 border border-white/5">
                     <h3 class="text-sm font-black mb-6 gold-text uppercase">Genel Yapılandırma</h3>
                     <div class="space-y-4">
-                        <input type="text" id="set-shop-name" placeholder="Dükkan Adı" class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none">
+                        <input type="text" id="set-shop-name" placeholder="Dükkan Adı"
+                            class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none">
                         <div class="flex gap-4">
-                            <input type="text" id="set-currency" placeholder="₺" class="w-full bg-black border border-neutral-800 p-4 rounded-xl">
-                            <input type="color" id="set-color" class="w-20 h-[58px] bg-black border border-neutral-800 p-2 rounded-xl cursor-pointer">
+                            <input type="text" id="set-currency" placeholder="₺"
+                                class="w-full bg-black border border-neutral-800 p-4 rounded-xl">
+                            <input type="color" id="set-color"
+                                class="w-20 h-[58px] bg-black border border-neutral-800 p-2 rounded-xl cursor-pointer">
                         </div>
                         <div class="flex items-center gap-4 bg-black p-4 rounded-xl border border-neutral-800">
                             <img id="set-logo-preview" class="h-10 w-20 object-contain rounded">
-                            <button onclick="document.getElementById('logo-upload').click()" class="bg-white/10 px-4 py-2 rounded-lg text-xs font-bold">Logo Seç</button>
-                            <input type="file" id="logo-upload" class="hidden" accept="image/*" onchange="compressAndPreview(event, 'logo')">
+                            <button onclick="document.getElementById('logo-upload').click()"
+                                class="bg-white/10 px-4 py-2 rounded-lg text-xs font-bold">Logo Seç</button>
+                            <input type="file" id="logo-upload" class="hidden" accept="image/*"
+                                onchange="compressAndPreview(event, 'logo')">
                         </div>
-                        <input type="text" id="set-password" placeholder="Admin Şifresi" class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none">
-                        <button onclick="saveGeneralSettings()" id="save-settings-btn" class="w-full gold-bg text-black py-4 rounded-xl font-black mt-4 transition-all hover:scale-[1.01]">KAYDET</button>
+                        <input type="text" id="set-password" placeholder="Admin Şifresi"
+                            class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none">
+                        <button onclick="saveGeneralSettings()" id="save-settings-btn"
+                            class="w-full gold-bg text-black py-4 rounded-xl font-black mt-4 transition-all hover:scale-[1.01]">KAYDET</button>
                     </div>
                 </div>
             </div>
@@ -155,8 +186,10 @@
                 <div class="max-w-xl bg-neutral-900 rounded-2xl p-6 border border-white/5">
                     <h3 class="text-sm font-black mb-6 gold-text uppercase">Kategori Listesi</h3>
                     <div class="flex gap-2 mb-8">
-                        <input type="text" id="new-cat-input" placeholder="Yeni Kategori..." class="flex-grow bg-black border border-neutral-800 p-4 rounded-xl outline-none">
-                        <button onclick="addCategory()" class="gold-bg text-black px-6 rounded-xl font-bold">EKLE</button>
+                        <input type="text" id="new-cat-input" placeholder="Yeni Kategori..."
+                            class="flex-grow bg-black border border-neutral-800 p-4 rounded-xl outline-none">
+                        <button onclick="addCategory()"
+                            class="gold-bg text-black px-6 rounded-xl font-bold">EKLE</button>
                     </div>
                     <div id="admin-category-list" class="space-y-2"></div>
                 </div>
@@ -166,7 +199,8 @@
             <div id="admin-tab-items" class="admin-tab hidden">
                 <div class="flex justify-between items-center mb-8">
                     <h3 class="text-sm font-black gold-text uppercase">Ürün Yönetimi</h3>
-                    <button onclick="openItemModal()" class="gold-bg text-black px-6 py-3 rounded-xl font-bold text-xs">YENİ ÜRÜN EKLE</button>
+                    <button onclick="openItemModal()"
+                        class="gold-bg text-black px-6 py-3 rounded-xl font-bold text-xs">YENİ ÜRÜN EKLE</button>
                 </div>
                 <div id="admin-item-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
             </div>
@@ -181,16 +215,24 @@
             <div class="space-y-4">
                 <div class="flex gap-4 items-center p-4 bg-black rounded-xl border border-neutral-800">
                     <img id="item-img-preview" src="" class="hidden w-16 h-16 object-cover rounded-lg">
-                    <button onclick="document.getElementById('item-img-upload').click()" class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg text-[10px] font-bold">Fotoğraf/GIF Seç</button>
-                    <input type="file" id="item-img-upload" class="hidden" accept="image/*" onchange="compressAndPreview(event, 'item')">
+                    <button onclick="document.getElementById('item-img-upload').click()"
+                        class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg text-[10px] font-bold">Fotoğraf/GIF
+                        Seç</button>
+                    <input type="file" id="item-img-upload" class="hidden" accept="image/*"
+                        onchange="compressAndPreview(event, 'item')">
                 </div>
-                <input type="text" id="item-name-input" placeholder="Ürün Adı" class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none">
+                <input type="text" id="item-name-input" placeholder="Ürün Adı"
+                    class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none">
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="item-price-input" placeholder="Fiyat" class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none">
-                    <select id="item-cat-select" class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none text-xs"></select>
+                    <input type="text" id="item-price-input" placeholder="Fiyat"
+                        class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none">
+                    <select id="item-cat-select"
+                        class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none text-xs"></select>
                 </div>
-                <textarea id="item-desc-input" placeholder="Açıklama..." class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none h-24 resize-none text-xs"></textarea>
-                <button id="save-item-btn" onclick="saveItem()" class="w-full gold-bg text-black py-4 rounded-xl font-black text-sm">ÜREÜNÜ KAYDET</button>
+                <textarea id="item-desc-input" placeholder="Açıklama..."
+                    class="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none h-24 resize-none text-xs"></textarea>
+                <button id="save-item-btn" onclick="saveItem()"
+                    class="w-full gold-bg text-black py-4 rounded-xl font-black text-sm">ÜREÜNÜ KAYDET</button>
             </div>
         </div>
     </div>
@@ -243,8 +285,13 @@
                 items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderMenu();
                 renderAdminItems();
-                document.getElementById('loading-screen').classList.add('hidden');
-                document.getElementById('menu-view').classList.remove('hidden');
+
+                // SADECE SAYFA İLK AÇILDIĞINDA ÇALIŞMASI İÇİN ŞÖYLE YAP:
+                const loadingScreen = document.getElementById('loading-screen');
+                if (!loadingScreen.classList.contains('hidden')) {
+                    loadingScreen.classList.add('hidden');
+                    document.getElementById('menu-view').classList.remove('hidden');
+                }
             });
         }
 
@@ -285,11 +332,11 @@
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    
+
                     // Kaliteyi %70'e düşürerek boyutu inanılmaz küçültüyoruz
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
                     compressedImages[mode] = dataUrl;
-                    
+
                     const previewImg = mode === 'logo' ? document.getElementById('set-logo-preview') : document.getElementById('item-img-preview');
                     previewImg.src = dataUrl;
                     previewImg.classList.remove('hidden');
@@ -323,11 +370,11 @@
             document.getElementById('new-cat-input').value = '';
         };
 
-        window.deleteCategory = async (id) => { if(confirm("Silinsin mi?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', id)); };
+        window.deleteCategory = async (id) => { if (confirm("Silinsin mi?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', id)); };
 
         window.saveItem = async () => {
             const btn = document.getElementById('save-item-btn');
-            if(btn.disabled) return;
+            if (btn.disabled) return;
             btn.disabled = true;
             try {
                 const data = {
@@ -335,7 +382,7 @@
                     price: document.getElementById('item-price-input').value,
                     description: document.getElementById('item-desc-input').value,
                     categoryId: document.getElementById('item-cat-select').value,
-                    imageUrl: compressedImages.item || (editingItemId ? items.find(i=>i.id===editingItemId).imageUrl : "")
+                    imageUrl: compressedImages.item || (editingItemId ? items.find(i => i.id === editingItemId).imageUrl : "")
                 };
                 if (!data.name) throw new Error("İsim boş olamaz!");
                 if (editingItemId) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'items', editingItemId), data);
@@ -345,7 +392,7 @@
             finally { btn.disabled = false; }
         };
 
-        window.deleteItem = async (id) => { if(confirm("Ürün silinsin mi?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'items', id)); };
+        window.deleteItem = async (id) => { if (confirm("Ürün silinsin mi?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'items', id)); };
 
         // RENDER
         function applySettings() {
@@ -371,7 +418,7 @@
                 </div>
             `).join('');
 
-            menuList.innerHTML = `<button onclick="window.filterCat('All')" class="px-5 py-2 rounded-lg font-black border ${selectedCategory === 'All' ? 'gold-bg text-black' : 'bg-white/5 text-neutral-400 border-white/10'} text-[10px] uppercase">TÜMÜ</button>` + 
+            menuList.innerHTML = `<button onclick="window.filterCat('All')" class="px-5 py-2 rounded-lg font-black border ${selectedCategory === 'All' ? 'gold-bg text-black' : 'bg-white/5 text-neutral-400 border-white/10'} text-[10px] uppercase">TÜMÜ</button>` +
                 categories.map(c => `<button onclick="window.filterCat('${c.id}')" class="px-5 py-2 rounded-lg font-black border ${selectedCategory === c.id ? 'gold-bg text-black' : 'bg-white/5 text-neutral-400 border-white/10'} text-[10px] uppercase">${c.name}</button>`).join('');
 
             select.innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
@@ -440,4 +487,5 @@
 
     </script>
 </body>
+
 </html>
