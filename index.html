@@ -216,13 +216,12 @@
 
         // CONFIGURATION
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "AIzaSyAW2AOrkNufhOz4jfoStXRLqONSpVIBhSI",
+            apiKey: "", // LOKALDE ÇALIŞMASI İÇİN BURAYI DOLDURUN
             authDomain: "alaturka-doner.firebaseapp.com",
             projectId: "alaturka-doner",
             storageBucket: "alaturka-doner.firebasestorage.app",
             messagingSenderId: "505768016647",
-            appId: "1:505768016647:web:b0078148adaf4c21bae3a2",
-            measurementId: "G-W5RE5765MF"
+            appId: "1:505768016647:web:b0078148adaf4c21bae3a2"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -357,13 +356,26 @@
 
         window.saveItem = async () => {
             const btn = document.getElementById('save-item-btn');
+            if (btn.disabled) return;
+            
             btn.disabled = true;
+            const originalText = btn.innerText;
+            btn.innerText = "KAYDEDİLİYOR...";
+
             try {
+                // Eğer oturum açılmadıysa uyar
+                if (!auth.currentUser) {
+                    throw new Error("Oturum açılmadı. Lütfen internet bağlantınızı kontrol edin.");
+                }
+
                 let imageUrl = editingItemId ? items.find(i => i.id === editingItemId).imageUrl : "";
+                
+                // Yeni dosya varsa yükle
                 if (pendingFiles.item) {
                     imageUrl = await uploadFile(pendingFiles.item, 'products');
                     pendingFiles.item = null;
                 }
+
                 const data = {
                     name: document.getElementById('item-name-input').value,
                     price: document.getElementById('item-price-input').value,
@@ -371,13 +383,23 @@
                     categoryId: document.getElementById('item-cat-select').value,
                     imageUrl: imageUrl
                 };
-                if (editingItemId) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'items', editingItemId), data);
-                else await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'items'), data);
+
+                // Boş isim kontrolü
+                if (!data.name) throw new Error("Ürün adı boş olamaz.");
+
+                if (editingItemId) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'items', editingItemId), data);
+                } else {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'items'), data);
+                }
+                
                 closeItemModal();
             } catch (err) {
+                console.error("Kayıt hatası:", err);
                 alert("Ürün hatası: " + err.message);
             } finally {
                 btn.disabled = false;
+                btn.innerText = originalText;
             }
         };
 
@@ -482,8 +504,11 @@
 
         window.openItemModal = (id = null) => {
             editingItemId = id;
+            pendingFiles.item = null; // Bekleyen dosyayı sıfırla
+            
             const modal = document.getElementById('item-modal');
             const preview = document.getElementById('item-img-preview');
+            
             if (id) {
                 const i = items.find(x => x.id === id);
                 document.getElementById('item-name-input').value = i.name;
@@ -493,7 +518,11 @@
                 preview.src = i.imageUrl;
                 preview.classList.toggle('hidden', !i.imageUrl);
             } else {
+                // Yeni ürün için tüm alanları ve durumu temizle
                 ['item-name-input', 'item-price-input', 'item-desc-input'].forEach(k => document.getElementById(k).value = "");
+                if (categories.length > 0) {
+                    document.getElementById('item-cat-select').value = categories[0].id;
+                }
                 preview.classList.add('hidden');
             }
             modal.classList.remove('hidden');
